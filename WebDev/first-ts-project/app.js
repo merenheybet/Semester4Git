@@ -12,8 +12,33 @@ const button = document.getElementById('increment');
 const countDisplay = document.getElementById('count');
 const resetButton = document.getElementById('reset');
 const imageContainer = document.getElementById('image-container');
+const audioContainer = document.getElementById('audio-container');
+const chaseButton = document.getElementById('chase');
 let count = 0;
 let prank_triggered = false;
+let pos_top;
+let pos_bottom;
+let pos_right;
+let pos_left;
+button.addEventListener('click', () => {
+    toggle_prank(true);
+    count++;
+    countDisplay.textContent = "You've clicked " + count.toString() + " times";
+});
+resetButton.addEventListener('mouseenter', () => {
+    toggle_prank(false);
+});
+resetButton.addEventListener('mouseleave', () => {
+    toggle_prank(true);
+});
+chaseButton.addEventListener('mouseover', () => {
+    pos_top = Math.floor(Math.random() * 90);
+    pos_right = Math.floor(Math.random() * 90);
+    chaseButton.style.position = 'absolute';
+    chaseButton.style.top = `${pos_top}%`;
+    chaseButton.style.right = `${pos_right}%`;
+    playAudio();
+});
 function getMeme() {
     return __awaiter(this, void 0, void 0, function* () {
         const url = "https://api.imgflip.com/get_memes";
@@ -56,14 +81,10 @@ function toggle_prank(increment) {
         }
     });
 }
-button.addEventListener('click', () => {
-    toggle_prank(true);
-    count++;
-    countDisplay.textContent = "You've clicked " + count.toString() + " times";
-});
-resetButton.addEventListener('mouseenter', () => {
-    toggle_prank(false);
-});
-resetButton.addEventListener('mouseleave', () => {
-    toggle_prank(true);
-});
+function playAudio() {
+    audioContainer.innerHTML = '';
+    const audio = document.createElement('audio');
+    audio.src = "tiny-creature-laugh-272424.mp3";
+    audio.play();
+    audioContainer.appendChild(audio);
+}
