@@ -6,7 +6,7 @@ const imageContainer = document.getElementById('image-container') as HTMLDivElem
 let count: number = 0;
 let prank_triggered: boolean = false
 
-async function getMeme(){
+async function getMeme(): Promise<string> {
     const url = "https://api.imgflip.com/get_memes";
     try{
         const raw_response = await fetch(url);
@@ -19,16 +19,21 @@ async function getMeme(){
         if(!response.success){
             throw new Error("API not responding...");
         }
-        response.data.memes
 
+        const memes = response.data.memes;
+        let randIndex: number = Math.floor(Math.random() * response.data.memes.length);
+        const memeURL: string = memes[randIndex].url;
+
+        return memeURL || "";
 
     }
     catch(error){
         console.error(error);
+        return "";
     }
 }
 
-function toggle_prank(increment: boolean){
+async function toggle_prank(increment: boolean){
     imageContainer.innerHTML = '';
     if(!prank_triggered&&!increment){
         count = 0;
@@ -36,7 +41,7 @@ function toggle_prank(increment: boolean){
 
         const image = document.createElement('img');
 
-        image.src = 'el-risitas-juan-joya-borja.png';
+        image.src = await getMeme();
         image.alt = 'Reset image';
         imageContainer.appendChild(image);
         prank_triggered = true;
@@ -50,10 +55,9 @@ function toggle_prank(increment: boolean){
 }
 
 button.addEventListener('click', () => {
-    getMeme();
-    //toggle_prank(true);
-    //count++;
-    //countDisplay.textContent = "You've clicked " + count.toString() + " times";
+    toggle_prank(true);
+    count++;
+    countDisplay.textContent = "You've clicked " + count.toString() + " times";
 });
 
 resetButton.addEventListener('mouseenter', () => {
