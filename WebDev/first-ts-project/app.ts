@@ -8,9 +8,7 @@ const chaseButton = document.getElementById('chase') as HTMLButtonElement
 let count: number = 0;
 let prank_triggered: boolean = false
 let pos_top: number
-let pos_bottom: number
 let pos_right: number
-let pos_left: number
 
 
 button.addEventListener('click', () => {
