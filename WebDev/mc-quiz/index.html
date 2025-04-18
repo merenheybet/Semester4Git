@@ -3,15 +3,25 @@
 <head>
   <meta charset="UTF-8" />
   <title>MC Quiz</title>
+  <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css" />
 </head>
-<body>
+<body style="font-family: 'VT323', monospace;">
   <div id="quiz-container">
     <h1>Minecraft Trivia</h1>
     <div id="question">Loading...</div>
     <div id="choices"></div>
     <button id="next" disabled>Next Question</button>
     <div id="feedback"></div>
+  </div>
+  <div id="congrats-container" style="display: none;">
+    <h1>🎉 Congratulations! 🎉</h1>
+    <p>You completed the Minecraft Quiz!</p>
+    <button id="restart">Play Again</button>
+  </div>
+
+  <div id="xp-bar-container">
+    <div id="xp-bar-fill"></div>
   </div>
 
   <script src="app.js"></script>

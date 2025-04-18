@@ -8,6 +8,11 @@ type Question = {
 const question_div = document.getElementById("question") as HTMLDivElement
 const choices_div = document.getElementById("choices") as HTMLDivElement
 const next_button = document.getElementById("next") as HTMLButtonElement
+const congrats_div = document.getElementById("congrats-container") as HTMLDivElement
+const quiz_div = document.getElementById("quiz-container") as HTMLDivElement
+const restart_button = document.getElementById("restart") as HTMLButtonElement
+
+const progress_bar = document.getElementById("xp-bar-fill") as HTMLDivElement
 
 let questions: Question[] = [];
 let question_answered: boolean = false;
@@ -38,9 +43,10 @@ async function displayQuestion(index: number){
     question_div.innerHTML = '';
     const question_html = document.createElement('p');
     question_html.innerHTML = current_question.question;
-    console.log(current_question.question);
 
     question_div.appendChild(question_html);
+
+    
 
     return displayChoicesForQuestion(current_question);
 }
@@ -55,6 +61,7 @@ function displayChoicesForQuestion(current_question: Question) {
         option_buttons[choice_index] = choice_button;
         choice_button.textContent = choice_iter;
         choice_button.setAttribute('class', 'choice-btn');
+        choice_button.setAttribute('id', 'unanswered');
         choice_button.addEventListener('click', () => handleClick(choice_button, choice_index, current_question.correctAnswer, option_buttons));
         choices_div.appendChild(choice_button);
     });
@@ -67,6 +74,12 @@ function handleClick(button:HTMLButtonElement, index: number, correct_answer: nu
             if(butIter === button){}
             else{butIter.disabled = true;}
         });
+        question_answered = true;
+
+        progress_percentage = ((current_question_number + 1) / questions.length) * 100;
+        console.log(progress_percentage);
+        progress_bar.style.width = `${progress_percentage}%`;
+
         next_button.disabled = false;
     }
     else{
@@ -75,9 +88,25 @@ function handleClick(button:HTMLButtonElement, index: number, correct_answer: nu
 }
 
 next_button.addEventListener('click', async () => {
-    question_answered = true;
+    if(!question_answered){
+        console.warn("You must answer the question first!");
+        return;
+    }
+    
     current_question_number++;
     if(current_question_number >= questions.length){
+        quiz_div.setAttribute('style', 'display: none;');
+        congrats_div.removeAttribute('style');
+        progress_bar.style.width = '100%';
+        restart_button.addEventListener('click', () => {
+            quiz_div.removeAttribute('style');
+            congrats_div.setAttribute('style', 'display: none;');
+            progress_bar.style.width = '0%';
+            current_question_number = 0;
+            progress_percentage = 0;
+            displayQuestion(current_question_number);
+        })
+
         console.log("Game finished");
     }
     else{
@@ -86,4 +115,5 @@ next_button.addEventListener('click', async () => {
 });
 
 let current_question_number = 0;
+let progress_percentage = 0;
 displayQuestion(current_question_number);
