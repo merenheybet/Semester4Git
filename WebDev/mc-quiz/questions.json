@@ -1,0 +1,62 @@
+[
+    {
+      "id": 0,
+      "question": "What is the rarest ore in Minecraft (as of 1.20)?",
+      "choices": ["Emerald", "Ancient Debris", "Diamond", "Netherite"],
+      "correctAnswer": 1
+    },
+    {
+      "id": 1,
+      "question": "Which mob drops Ender Pearls?",
+      "choices": ["Zombie", "Creeper", "Enderman", "Skeleton"],
+      "correctAnswer": 2
+    },
+    {
+      "id": 2,
+      "question": "What is the default game mode when you create a new world?",
+      "choices": ["Creative", "Adventure", "Survival", "Hardcore"],
+      "correctAnswer": 2
+    },
+    {
+      "id": 3,
+      "question": "Which dimension do you reach using a portal made of obsidian?",
+      "choices": ["The End", "The Nether", "Sky Dimension", "The Aether"],
+      "correctAnswer": 1
+    },
+    {
+      "id": 4,
+      "question": "Which material can be used to tame a horse?",
+      "choices": ["Wheat", "Golden Apple", "Saddle", "You don't need an item"],
+      "correctAnswer": 3
+    },
+    {
+      "id": 5,
+      "question": "What do you need to craft a cake in Minecraft?",
+      "choices": ["Milk, Sugar, Egg, Wheat", "Milk, Egg, Apple", "Sugar, Wheat, Meat", "Milk, Pumpkin, Sugar"],
+      "correctAnswer": 0
+    },
+    {
+      "id": 6,
+      "question": "Which mob was accidentally created when trying to design a pig?",
+      "choices": ["Creeper", "Enderman", "Blaze", "Slime"],
+      "correctAnswer": 0
+    },
+    {
+      "id": 7,
+      "question": "What is the maximum level for the enchantment 'Protection' on armor?",
+      "choices": ["3", "5", "4", "2"],
+      "correctAnswer": 2
+    },
+    {
+      "id": 8,
+      "question": "What item do you use to cure a zombie villager?",
+      "choices": ["Golden Apple", "Potion of Healing", "Potion of Weakness and Golden Apple", "Milk Bucket"],
+      "correctAnswer": 2
+    },
+    {
+      "id": 9,
+      "question": "Which block do you use to respawn the Ender Dragon?",
+      "choices": ["Beacon", "End Crystal", "Dragon Egg", "Obsidian"],
+      "correctAnswer": 1
+    }
+  ]
