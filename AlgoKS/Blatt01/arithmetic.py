@@ -1,10 +1,18 @@
 def primes_sieve(n):
     """Return a list of all prime numbers less than or equal to `n`."""
-    if n < 0:
-        raise Exception("No negative numbers as argument are allowed")
+    if n <= 1:
+        raise Exception("Please enter a bigger number")
+    primes = [2]
+    for i in range(2, n):
+        is_prime = True
+        for j in range(2, i):
+            if (j%i) == 0:
+                is_prime = False
+                break
+        if is_prime == True:
+            primes.append(i)
     
-
-    pass  # TODO
+    return primes
 
 
 def factorize(n):
