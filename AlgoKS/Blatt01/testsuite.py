@@ -193,7 +193,7 @@ class SubtaskReport:
 
     @property
     def _marks_report(self) -> str:
-        return f"{self.marks:g} / {self.subtask.marks:g} Punkte"
+        return f"{float(self.marks):g} / {float(self.subtask.marks):g} Punkte"
 
     def string(self, verbose: bool = False) -> str:
         outp = ""
@@ -254,7 +254,7 @@ class TaskReport:
     @property
     def _marks_report(self) -> str:
         max_marks = self.task.total_marks()
-        return f"{self.marks:g} / {max_marks:g} Punkte"
+        return f"{float(self.marks):g} / {float(max_marks):g} Punkte"
 
     def string(self, verbose: bool = False) -> str:
         outp = "\n"
