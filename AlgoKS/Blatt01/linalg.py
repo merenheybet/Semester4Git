@@ -10,7 +10,8 @@ def reflection2d(omega):
     Returns:
         np.ndarray: The resulting rotation matrix of dimension (2, 2).
     """
-    pass  # TODO
+    return np.array([[np.cos(2 * omega), np.sin(2 * omega)], 
+              [np.sin(2 * omega), -1 * np.cos(2 * omega)]])
 
 
 def eye(n, m):
@@ -24,7 +25,7 @@ def eye(n, m):
     Returns:
         np.ndarray: The resulting "identity matrix" of dimension (n, m).
     """
-    pass  # TODO
+    return np.eye(n, m)
 
 
 def compose(matrices):
@@ -37,7 +38,17 @@ def compose(matrices):
         np.ndarray: Composed Matrix.
     """
     assert matrices, "Expected at least one matrix"
-    pass  # TODO
+
+    prev_matrix = None
+    for matrix in matrices:
+        if prev_matrix is None:
+            prev_matrix = matrix
+            continue
+        else:
+            prev_matrix = prev_matrix @ matrix
+            continue
+    
+    return prev_matrix
 
 
 def antidiag(values):
@@ -50,7 +61,11 @@ def antidiag(values):
         np.ndarray: The resulting anti-diagonal matrix.
     """
     assert len(values) >= 1
-    pass  # TODO
+
+    diag_values = np.array(values)
+    diagonal_matrix = np.diag(diag_values)
+    anti_diag = np.flipud(diagonal_matrix)
+    return anti_diag
 
 
 def kronecker_product(A, B):

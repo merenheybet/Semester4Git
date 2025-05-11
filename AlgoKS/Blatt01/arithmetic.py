@@ -34,7 +34,20 @@ def factorize(n):
 def gcd(a, b):
     """Compute and return the greatest common denominator of the natural numbers
     `a` and `b` using Euclid's algorithm."""
-    pass  # TODO
+
+    # Calculate the Primfaktorzerlegung von a und b
+    a_factors = factorize(a)
+    b_factors = factorize(b)
+
+    gcd = 1
+    for i_a in a_factors:
+        if i_a in b_factors:
+            gcd = gcd * i_a
+            # Removes first occurence of i_a - so should only remove one of the values
+            b_factors.remove(i_a)
+    
+    return gcd
+
 
 
 def qreduce(fraction):
@@ -44,7 +57,16 @@ def qreduce(fraction):
     Args:
         fraction: Tuple `(p, q)` representing the fraction p / q, where q > 0.
     """
-    pass  # TODO
+    if(fraction[1] <= 0):
+        raise Exception("q darf nicht kleiner gleich 0 sein")
+    
+    if(fraction[0] <= 0):
+        abs_a = fraction[0] * -1
+        divide_by = gcd(abs_a, fraction[1])
+    else:
+        divide_by = gcd(fraction[0], fraction[1])    
+    
+    return (fraction[0] // divide_by, fraction[1] // divide_by)
 
 
 def qadd(r, s):
@@ -57,4 +79,11 @@ def qadd(r, s):
         s: Second summand, a rational number represented as a tuple
             of numerator and denominator
     """
-    pass  # TODO
+    a_0 = r[0] * s[1]
+    a_1 = s[0] * r[1]
+
+
+    a = a_0 + a_1
+    b = r[1] * s[1]
+
+    return qreduce((a, b))
