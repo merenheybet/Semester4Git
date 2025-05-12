@@ -59,7 +59,12 @@ def add_entity(grid, entity, y, x):
         np.ndarray: The updated game grid with the entity starting at position
         (y, x).
     """
-    pass  # TODO
+    entity_y_size, entity_x_size = np.shape(entity)
+    for y_offset in range(entity_y_size):
+        for x_offset in range(entity_x_size):
+            grid[y+y_offset, x+x_offset] = entity[y_offset, x_offset] 
+
+    return grid
 
 
 def next_step(grid):
@@ -73,4 +78,33 @@ def next_step(grid):
         rules according to which you should update each cell in your
         exercise sheet.
     """
-    pass  # TODO
+    y_size, x_size = np.shape(grid)
+    duplicate_grid = np.copy(grid)
+
+    for y_index in range(y_size):
+        for x_index in range(x_size):
+            current_cell = grid[y_index, x_index]
+            upper_left = int(grid[(y_index - 1) % y_size, (x_index - 1) % x_size])
+            upper = int(grid[(y_index - 1) % y_size, x_index])
+            upper_right = int(grid[(y_index - 1) % y_size, (x_index + 1) % x_size])
+            left = int(grid[y_index, (x_index - 1) % x_size])
+            right = int(grid[y_index, (x_index + 1) % x_size])
+            lower_left = int(grid[(y_index + 1) % y_size, (x_index - 1) % x_size])
+            lower = int(grid[(y_index + 1) % y_size, x_index])
+            lower_right = int(grid[(y_index + 1) % y_size, (x_index + 1) % x_size])
+
+            total_neighbors = upper_left + upper + upper_right + left + right + lower_left + lower + lower_right
+
+            if total_neighbors == 3:
+                add_entity(duplicate_grid, np.array([[1]], dtype=bool), y_index, x_index)
+            elif current_cell and (total_neighbors < 2):
+                add_entity(duplicate_grid, np.array([[0]], dtype=bool), y_index, x_index)
+            elif current_cell and (total_neighbors == 2):
+                continue
+            elif total_neighbors > 3:
+                add_entity(duplicate_grid, np.array([[0]], dtype=bool), y_index, x_index)
+
+    return duplicate_grid
+
+
+

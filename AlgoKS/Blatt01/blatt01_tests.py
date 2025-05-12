@@ -305,6 +305,76 @@ sheet = ts.Sheet(
                             ),
                             np.array([[0, 1, 0], [0, 0, 0]], dtype=bool),
                         ),
+                        ts.TestCase(
+                            (
+                                np.array([[0, 0, 0], [0, 0, 0]], dtype=bool),
+                                np.array([[1,1]], dtype=bool),
+                                0,
+                                1,
+                            ),
+                            np.array([[0, 1, 1], [0, 0, 0]], dtype=bool),
+                        ),
+                        ts.TestCase(
+                            (
+                                np.array([[0, 0, 0], [0, 0, 0]], dtype=bool),
+                                np.array([[1,1],[1,1]], dtype=bool),
+                                0,
+                                1,
+                            ),
+                            np.array([[0, 1, 1], [0, 1, 1]], dtype=bool),
+                        ),
+                        # Test Case 5: Entity (2x2 block) added at bottom-right corner
+                        ts.TestCase(
+                            (
+                                np.array([[0, 0, 0], [0, 0, 0], [0, 0, 0]], dtype=bool),
+                                np.array([[1, 1], [1, 0]], dtype=bool),
+                                1,
+                                1,
+                            ),
+                            np.array([[0, 0, 0], [0, 1, 1], [0, 1, 0]], dtype=bool),
+                        ),
+
+                        # Test Case 6: Adding a glider to a 5x5 grid at top-left
+                        ts.TestCase(
+                            (
+                                np.zeros((5, 5), dtype=bool),
+                                np.array([[0, 1, 0],
+                                        [0, 0, 1],
+                                        [1, 1, 1]], dtype=bool),
+                                0,
+                                0,
+                            ),
+                            np.array([
+                                [0, 1, 0, 0, 0],
+                                [0, 0, 1, 0, 0],
+                                [1, 1, 1, 0, 0],
+                                [0, 0, 0, 0, 0],
+                                [0, 0, 0, 0, 0],
+                            ], dtype=bool),
+                        ),
+
+                        # Test Case 7: Entity with 1 column, multiple rows
+                        ts.TestCase(
+                            (
+                                np.array([[0, 0], [0, 0], [0, 0]], dtype=bool),
+                                np.array([[1], [0], [1]], dtype=bool),
+                                0,
+                                1,
+                            ),
+                            np.array([[0, 1], [0, 0], [0, 1]], dtype=bool),
+                        ),
+
+                        # Test Case 8: Placing an empty (0x0) entity (should not change the grid)
+                        ts.TestCase(
+                            (
+                                np.array([[0, 0], [0, 0]], dtype=bool),
+                                np.empty((0, 0), dtype=bool),
+                                0,
+                                0,
+                            ),
+                            np.array([[0, 0], [0, 0]], dtype=bool),
+                        ),
+
                         #   TODO More tests
                     ],
                 ),
