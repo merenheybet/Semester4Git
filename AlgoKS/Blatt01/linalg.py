@@ -74,7 +74,18 @@ def kronecker_product(A, B):
     Returns:
         np.ndarray: The resulting matrix.
     """
-    pass  # TODO
+    array_list = []
+
+    for line in A:
+        row_result = []
+        for number in line:
+            temp_result = number * B
+            row_result.append(temp_result)
+        array_list.append(np.hstack(row_result))
+
+
+    return np.vstack(array_list)
+
 
 
 def walsh(n):
@@ -83,4 +94,14 @@ def walsh(n):
     Returns:
         np.ndarray: The resulting matrix of dimension (2**n, 2**n).
     """
-    pass  # TODO
+    if n==0: 
+        return np.array([[1]])
+    
+    prev = walsh(n-1)
+    upper_list = [prev, prev]
+    lower_list = [prev, -1 * prev]
+    upper = np.hstack(upper_list)
+    lower = np.hstack(lower_list)
+    total_list = [upper, lower]
+    
+    return np.vstack(total_list)
