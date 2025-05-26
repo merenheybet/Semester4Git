@@ -15,7 +15,13 @@ def swap_rows(A, row1, row2):
     Returns:
         np.ndarray: The augmented matrix with swapped rows.
     """
-    pass  # TODO
+    A_copy = np.copy(A)
+
+    tmp_row = A[row1]
+    A_copy[row1] = A[row2]
+    A_copy[row2] = tmp_row
+
+    return A_copy
 
 
 def subtract_scaled(A, dst, src, scale):
@@ -30,7 +36,11 @@ def subtract_scaled(A, dst, src, scale):
     Returns:
         np.ndarray: The augmented matrix with subtracted rows.
     """
-    pass  # TODO
+    to_substract = A[src] * scale
+    substract_from = A[dst]
+    new_row = substract_from - to_substract
+    A[dst] = new_row
+    return A
 
 
 def pivot_index(A, column):
@@ -44,7 +54,15 @@ def pivot_index(A, column):
     Returns:
         int: The pivot index, satisfying the condition above.
     """
-    pass  # TODO
+    pivot_index = column
+    max_value = abs(A[column, column])
+    y_size, x_size = np.shape(A)
+    for i in range(column, y_size):
+        if abs(A[i, column]) > max_value:
+            max_value = abs(A[i, column])
+            pivot_index = i
+
+    return pivot_index
 
 
 def lu_decompose(A):
@@ -61,13 +79,44 @@ def lu_decompose(A):
     assert m == n
 
     P = np.eye(n)
-    L = np.zeros((n, n))
+    L = np.zeros((n,n))
     U = A.copy()
 
-    # TODO
+    # At first I'm gonna implement only one iteration, so I can visualise how it should
+    # go on
 
+    for col in range(m):
+        # Erste Pivot fertig, jetzt muss die erste Spalte unter der Hauptdiagonale 0'en sein
+        pivot = pivot_index(A, col)
+        # Pivotisierung nur, falls pivot_index ungleich col ist
+        if pivot != col:
+            U = swap_rows(U, col, pivot)
+            P = swap_rows(P.T, col, pivot).T
+            L = swap_rows(L, col, pivot)
+        
+        diag_value = U[col, col]
+        for gauss_i in range(col + 1, m):
+            cur_value = U[gauss_i, col]
+            scale = cur_value / diag_value
+            U = subtract_scaled(U, gauss_i, col, scale)
+            L[gauss_i, col] = scale
+
+    L = np.add(np.eye(n), L)
+
+    # Check that the answer is right
+    print(P @ L @ U)
+    
     return (P, L, U)
 
+lu_decompose(
+                                np.array(
+                                    [
+                                        [2.0, 3.0, 5.0],
+                                        [6.0, 10.0, 17.0],
+                                        [8.0, 14.0, 28.0],
+                                    ]
+                                ),
+                            )
 
 def forward_substitute(L, b):
     """Return ``y`` such that ``L @ y = b`` (*)
