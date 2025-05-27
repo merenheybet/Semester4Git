@@ -57,7 +57,7 @@ def pivot_index(A, column):
     pivot_index = column
     max_value = abs(A[column, column])
     y_size, x_size = np.shape(A)
-    for i in range(column, y_size):
+    for i in range(column + 1, y_size):
         if abs(A[i, column]) > max_value:
             max_value = abs(A[i, column])
             pivot_index = i
@@ -87,7 +87,7 @@ def lu_decompose(A):
 
     for col in range(m):
         # Erste Pivot fertig, jetzt muss die erste Spalte unter der Hauptdiagonale 0'en sein
-        pivot = pivot_index(A, col)
+        pivot = pivot_index(U, col)
         # Pivotisierung nur, falls pivot_index ungleich col ist
         if pivot != col:
             U = swap_rows(U, col, pivot)
@@ -104,19 +104,10 @@ def lu_decompose(A):
     L = np.add(np.eye(n), L)
 
     # Check that the answer is right
-    print(P @ L @ U)
+    # print(P @ L @ U)
     
     return (P, L, U)
 
-lu_decompose(
-                                np.array(
-                                    [
-                                        [2.0, 3.0, 5.0],
-                                        [6.0, 10.0, 17.0],
-                                        [8.0, 14.0, 28.0],
-                                    ]
-                                ),
-                            )
 
 def forward_substitute(L, b):
     """Return ``y`` such that ``L @ y = b`` (*)
