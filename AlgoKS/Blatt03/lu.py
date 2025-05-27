@@ -119,7 +119,21 @@ def forward_substitute(L, b):
     Returns:
         np.ndarray: Vector ``y``, such that (*) holds.
     """
-    pass  # TODO
+    y_array = []
+    y_size, x_size = L.shape
+    for j in range(y_size):
+        # y_0 = b_0 because the upper left corner of L is guaranteed 1
+        if j == 0:
+            y_array.append(b[0,0] / L[0,0])
+            continue
+
+        y_j = b[j, 0]
+        for i in range(j-1, -1, -1):
+            y_j -= L[j, i] * y_array[i]
+        y_array.append(y_j/L[j,j])
+
+    return np.array([y_array]).T
+
 
 
 def backward_substitute(R, y):
@@ -132,8 +146,19 @@ def backward_substitute(R, y):
     Returns:
         np.ndarray: Vector ``x``, such that (**) holds.
     """
-    pass  # TODO
+    y_size, x_size = R.shape
+    x_array = [0.] * y_size
+    for j in range(y_size-1 , -1, -1):
+        if j == y_size - 1:
+            x_array[j] =  y[j,0] / R[j,j]
+            continue
+        
+        x_j = y[j, 0]
+        for i in range(y_size - 1, j - 1, -1):
+            x_j -= R[j,i] * x_array[i]
+        x_array[j] = x_j / R[j,j]
 
+    return np.array([x_array]).T
 
 def linsolve(A, *bs):
     """Return ``(x_{0}, ..., x_{n-1})``, such that ``A @ xk = bs[k]``
@@ -146,4 +171,13 @@ def linsolve(A, *bs):
     Returns:
         Tuple[np.ndarray, ...]: ``(x_{0}, ..., x_{n - 1})`` as mentioned above.
     """
-    pass  # TODO
+    P, L, R = lu_decompose(A)
+    result = []
+    
+    for b in bs:
+        new_b = P.T @ b
+        result.append(backward_substitute(R, forward_substitute(L, new_b)))
+    
+    return tuple(result)
+
+
