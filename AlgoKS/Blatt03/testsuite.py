@@ -1,8 +1,8 @@
 # Test-Suite für Hausaufgaben im Fach Algorithmik kontinuierlicher Systeme
 #
-# Version 2025.05.07
+# Version 2025.05.26
 #
-# Copyright © 2025 Frederik Hennig
+# Copyright © 2025 Frederik Hennig, Michael Zikeli
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the “Software”),
@@ -33,13 +33,41 @@ from fractions import Fraction
 import multiprocessing as mp
 from textwrap import indent
 from collections import defaultdict
-import numpy as np
 import ast
+
+
+import numpy as np
 
 
 TIMEOUT = 15
 FLOAT_ATOL = 1e-12
 FLOAT_RTOL = 1e-6
+
+
+def patch_forbidden_functions():
+    import builtins
+
+    tmp = dict()
+    tmp["input"] = builtins.input
+    builtins.input = ForbiddenMember("input")
+
+    return tmp
+
+
+def _reinstante_forbidden_functions(tmp):
+    import builtins
+
+    builtins.input = tmp["input"]
+
+
+@contextmanager
+def disable_forbidden_functions():
+    tmp = patch_forbidden_functions()
+
+    try:
+        yield None
+    finally:
+        _reinstante_forbidden_functions(tmp)
 
 
 class PrettyPrint:
@@ -151,6 +179,12 @@ class TestResult:
     success: bool
 
     detail: str | None = None
+    stdout: str | None = None
+    stderr: str | None = None
+
+    @property
+    def has_prints(self) -> bool:
+        return bool(self.stdout or self.stderr)
 
     def string(self, verbose: bool = False) -> str:
         if self.success:
@@ -161,13 +195,26 @@ class TestResult:
         if self.detail and (verbose or not self.success):
             outp += "\n" + PrettyPrint.wrap_detail(self.detail)
 
+        if self.stdout:
+            outp += "\n\nSTDOUT:\n" + PrettyPrint.wrap_detail(self.stdout)
+
+        if self.stderr:
+            outp += "\n\nSTDERR:\n" + PrettyPrint.wrap_detail(self.stderr)
+
         return outp
 
     def markdown(self, idx: int) -> str:
         p = MarkdownPrint(block_depth=3)
 
         title = f"Test {idx} - "
+
         body = f"```\n{self.detail}\n```"
+
+        if self.stdout:
+            body += f"\n**STDOUT:**\n```\n{self.stdout}\n```"
+
+        if self.stderr:
+            body += f"\n**STDERR:**\n```\n{self.stderr}\n```"
 
         if self.success:
             title += "OK"
@@ -199,7 +246,7 @@ class SubtaskReport:
         outp = ""
         outp += PrettyPrint.h2(self._title)
 
-        if verbose or not self.success:
+        if verbose or not self.success or any(r.has_prints for r in self.test_results):
             outp += "\n"
             outp += "\n".join(
                 f"Test {i + 1}: {res.string(verbose)}"
@@ -346,7 +393,10 @@ class TaskRunner:
         function_name: str
         module_name: str
         module_path: Path
-        monkeypatches: tuple[Callable, ...]
+        monkeypatches: tuple[Callable, ...] = field(default_factory=tuple)
+
+        def __post_init__(self):
+            self.monkeypatches = (patch_forbidden_functions,) + self.monkeypatches
 
     def __init__(self, task: Task, src_dir: Path, mp_context):
         self._task = task
@@ -366,7 +416,9 @@ class TaskRunner:
 
     def import_and_check(self) -> bool:
         """Import task module and perform static checks."""
+        import os
         import importlib.util as iutil
+        from contextlib import redirect_stdout, redirect_stderr
 
         modspec = iutil.spec_from_file_location(self._modname, self._modpath)
 
@@ -379,16 +431,23 @@ class TaskRunner:
             return False
 
         module = iutil.module_from_spec(modspec)
-        try:
-            modspec.loader.exec_module(module)
-        except Exception as e:
-            self._report = TaskReport(
-                self._task,
-                error_msg=f"[FEHLER] Das Modul {self._modname} konnte nicht importiert werden:\n"
-                + PrettyPrint.wrap_detail(repr(e)),
-                marks=Fraction(0),
-            )
-            return False
+
+        with disable_forbidden_functions():
+            try:
+                with (
+                    open(os.devnull, "w") as devnull,
+                    redirect_stdout(devnull),
+                    redirect_stderr(devnull),
+                ):
+                    modspec.loader.exec_module(module)
+            except Exception as e:
+                self._report = TaskReport(
+                    self._task,
+                    error_msg=f"[FEHLER] Das Modul {self._modname} konnte nicht importiert werden:\n"
+                    + PrettyPrint.wrap_detail(repr(e)),
+                    marks=Fraction(0),
+                )
+                return False
 
         self._module = module
 
@@ -458,6 +517,8 @@ class TaskRunner:
     @staticmethod
     def _exec_testcase(spec: TestExecSpec) -> TestResult:
         import importlib.util as iutil
+        from io import StringIO
+        from contextlib import redirect_stdout, redirect_stderr
 
         modspec = iutil.spec_from_file_location(spec.module_name, spec.module_path)
         assert modspec is not None
@@ -466,29 +527,42 @@ class TaskRunner:
         for mpatch in spec.monkeypatches:
             mpatch()
 
-        try:
-            modspec.loader.exec_module(module)  # type: ignore
+        with StringIO() as stdout_io, StringIO() as stderr_io:
+            try:
+                with redirect_stdout(stdout_io), redirect_stderr(stderr_io):
+                    modspec.loader.exec_module(module)  # type: ignore
 
-            func = getattr(module, spec.function_name)
+                func = getattr(module, spec.function_name)
 
-            args = tuple(
-                (eval(arg.code, vars(module)) if isinstance(arg, ev) else arg)
-                for arg in spec.test_case.args
+                args = tuple(
+                    (eval(arg.code, vars(module)) if isinstance(arg, ev) else arg)
+                    for arg in spec.test_case.args
+                )
+
+                with redirect_stdout(stdout_io), redirect_stderr(stderr_io):
+                    outp = func(*args)
+
+            except BaseException as e:
+                return TestResult(
+                    False,
+                    repr(e),
+                    stdout=stdout_io.getvalue(),
+                    stderr=stderr_io.getvalue(),
+                )
+
+            success, err_msg = TaskRunner.check_result(outp, spec.test_case.expected)
+
+            args_str = ", ".join(repr(arg) for arg in args)
+            detail = f"{spec.function_name}({args_str}) = {repr(outp)}"
+            if err_msg is not None:
+                detail += "\n" + indent(err_msg, "  ", lambda _: True)
+
+            return TestResult(
+                success,
+                detail,
+                stdout=stdout_io.getvalue(),
+                stderr=stderr_io.getvalue(),
             )
-
-            outp = func(*args)
-
-        except BaseException as e:
-            return TestResult(False, str(e))
-
-        success, err_msg = TaskRunner.check_result(outp, spec.test_case.expected)
-
-        args_str = ", ".join(repr(arg) for arg in args)
-        detail = f"{spec.function_name}({args_str}) = {repr(outp)}"
-        if err_msg is not None:
-            detail += "\n" + indent(err_msg, "  ", lambda _: True)
-
-        return TestResult(success, detail)
 
     @staticmethod
     def check_result(actual: Any, expected: Any) -> tuple[bool, str | None]:
@@ -612,6 +686,23 @@ class TestDriver:
             yield None
         finally:
             TestDriver.active = False
+
+    def apply_correction(
+        self, tasks: Sequence[int | str], verbose: bool = True
+    ) -> tuple[Fraction, str]:
+        with TestDriver.lock():
+            tasknames = [str(t) for t in tasks]
+            selected_subtasks = self._filter_tasks(tasknames)
+            mark: Fraction = Fraction(0)
+            feedback: str = ""
+
+            #   Run tasks
+            for rep in self._process_subtasks(selected_subtasks):
+                assert rep.marks is not None
+                mark += rep.marks
+                feedback += rep.string(verbose)
+
+            return (mark, feedback)
 
     def run_cli(self):
         with TestDriver.lock():
