@@ -25,8 +25,16 @@ def cut_dimension(bbox):
             number 0 stands for red, 1 stands for green, and 2 stands for blue.
             In case of a draw, the smaller value has to be returned.
     """
-    pass  # TODO
+    return_index = -1
+    difference = -1
 
+    for i in range(len(bbox)):
+        current_difference = bbox[i][1] - bbox[i][0] # max - min
+        if current_difference > difference:
+            difference = current_difference
+            return_index = i
+
+    return return_index
 
 def recursive_median_cut(pixels, N, bbox=False):
     """Implements the main part of the median cut algorithm **recursively**.
@@ -49,8 +57,36 @@ def recursive_median_cut(pixels, N, bbox=False):
             by the values of the median cut algorithm, i.e. some sort of
             average pixel values.
     """
-    pass  # TODO
+    if len(pixels) == 0:
+        return []
+    
+    elif N == 0:
+        average_color = imgutils.color_average(pixels)
+        average_red = average_color[0]
+        average_green = average_color[1]
+        average_blue = average_color[2]
 
+        new_pixels = []
+        for pixel in pixels:
+            new_pixels.append((average_red, average_green, average_blue, pixel[3], pixel[4]))
+        
+        return new_pixels
+    
+    else:
+        if not bbox:
+            bbox = imgutils.bounding_box(pixels)
+
+        index = cut_dimension(bbox)
+        pixels.sort(key=lambda x: x[index])
+        
+        left_half = pixels[:len(pixels)//2]
+        right_half = pixels[len(pixels)//2:]
+
+        left_quantized = recursive_median_cut(left_half, N-1)
+        right_quantized = recursive_median_cut(right_half, N-1)
+
+        return left_quantized + right_quantized
+        
 
 def median_cut(image, ncuts=8):
     """Perform the median cut algorithm on a given image.
@@ -66,7 +102,11 @@ def median_cut(image, ncuts=8):
             A NumPy-Array of type ``uint8`` and shape (M, N, 3) representing
             the image created by the median cut algorithm.
     """
-    pass  # TODO
+    pixels = imgutils.image2pixels(image)
+    pixels_quantized = recursive_median_cut(pixels, ncuts)
+
+    image_quantized = imgutils.pixels2image(pixels_quantized)
+    return image_quantized
 
 
 def main():

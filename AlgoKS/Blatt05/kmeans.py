@@ -22,7 +22,12 @@ def compute_means(clusters):
             This means, that ``len(retVal) == len(clusters)`` must hold after
             calling this function!
     """
-    pass  # TODO
+    return_list = []
+
+    for cluster in clusters:
+        return_list.append(imgutils.color_average(cluster))
+    
+    return return_list
 
 
 def compute_clusters(pixels, means):
@@ -54,8 +59,39 @@ def compute_clusters(pixels, means):
             **IMPORTANT**: It must hold, that your return value is of the same
             length as ``means``!
     """
-    pass  # TODO
+    clusters = []
+    added_positions = []
 
+    if len(means) == 1:
+        cluster = []
+        for pixel in pixels:
+            cluster.append(pixel)
+        clusters.append(cluster)
+        return clusters
+
+
+    for mean_i in means:
+        cluster = []
+        for r,g,b,x,y in pixels:
+            add_pixel = True
+            for mean_j in means:
+                if mean_i == mean_j:
+                    continue
+                dist_i = (r - mean_i[0]) ** 2 + (g - mean_i[1]) ** 2 + (b - mean_i[2]) ** 2
+                dist_j = (r - mean_j[0]) ** 2 + (g - mean_j[1]) ** 2 + (b - mean_j[2]) ** 2
+                if dist_i <= dist_j:
+                    add_pixel &= True
+                    continue
+                else:
+                    add_pixel = False
+            if add_pixel and not (x,y) in added_positions:
+                cluster.append((r,g,b,x,y))
+                added_positions.append((x,y))
+        clusters.append(cluster)
+
+    return clusters
+
+compute_clusters([(0, 0, 253, 0, 2), (0, 0, 254, 1, 2), (0, 0, 255, 2, 2), (0, 253, 0, 0, 1), (0, 254, 0, 1, 1), (0, 255, 0, 2, 1), (14, 0, 0, 0, 0), (13, 0, 0, 1, 0), (12, 0, 0, 2, 0)], [(0, 0, 253), (0, 253, 0), (14, 0, 0)])
 
 def averaged_pixels(clusters, means):
     """Calculates a pixel-list with averaged values.
@@ -74,7 +110,16 @@ def averaged_pixels(clusters, means):
             been replaced with the respective color of the mean value.
     """
     assert(len(clusters) == len(means))
-    pass  # TODO
+
+    pixels = []
+
+    for i in range(len(clusters)):
+        for r,g,b,x,y in clusters[i]:
+            new_pixel = (means[i][0], means[i][1], means[i][2], x, y)
+            pixels.append(new_pixel)
+    
+    return pixels
+
 
 
 def kmeans(image, k):
