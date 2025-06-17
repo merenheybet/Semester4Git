@@ -95,17 +95,40 @@ def bounding_box(pixels):
 
     # The most inefficient solution
     ## Don't forget to optimise before Abgabe
-    red_max = max(pixel[0] for pixel in pixels)
-    red_min = min(pixel[0] for pixel in pixels)
+    # red_max = max(pixel[0] for pixel in pixels)
+    # red_min = min(pixel[0] for pixel in pixels)
 
-    green_max = max(pixel[1] for pixel in pixels)
-    green_min = min(pixel[1] for pixel in pixels)
+    # green_max = max(pixel[1] for pixel in pixels)
+    # green_min = min(pixel[1] for pixel in pixels)
 
-    blue_max = max(pixel[2] for pixel in pixels)
-    blue_min = min(pixel[2] for pixel in pixels)
+    # blue_max = max(pixel[2] for pixel in pixels)
+    # blue_min = min(pixel[2] for pixel in pixels)
 
+    # return ((red_min, red_max), (green_min, green_max), (blue_min, blue_max))
+    red_max = 0
+    red_min = float('inf')
+
+    blue_max = 0
+    blue_min = float('inf')
+
+    green_max = 0
+    green_min = float('inf')
+
+    for pixel in pixels:
+        if pixel[0] > red_max:
+            red_max = pixel[0]
+        if pixel[0] < red_min:
+            red_min = pixel[0]
+        if pixel[1] > green_max:
+            green_max = pixel[1]
+        if pixel[1] < green_min:
+            green_min = pixel[1]
+        if pixel[2] > blue_max:
+            blue_max = pixel[2]
+        if pixel[2] < blue_min:
+            blue_min = pixel[2]
+            
     return ((red_min, red_max), (green_min, green_max), (blue_min, blue_max))
-
 
 def color_average(pixels):
     """Return list of tuples (Ravg, Gavg, Bavg) with averaged color values.
