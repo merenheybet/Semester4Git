@@ -108,7 +108,6 @@ def compute_clusters(pixels, means):
 
     return clusters
 
-compute_clusters([(0, 0, 0, 0, 0), (0, 0, 0, 1, 0)], [(0, 0, 0), (1, 1, 1)])
 
 def averaged_pixels(clusters, means):
     """Calculates a pixel-list with averaged values.
