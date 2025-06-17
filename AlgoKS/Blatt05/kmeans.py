@@ -59,39 +59,56 @@ def compute_clusters(pixels, means):
             **IMPORTANT**: It must hold, that your return value is of the same
             length as ``means``!
     """
+    # clusters = []
+    # added_positions = []
+
+    # if len(means) == 1:
+    #     cluster = []
+    #     for pixel in pixels:
+    #         cluster.append(pixel)
+    #     clusters.append(cluster)
+    #     return clusters
+
+
+    # for mean_i in means:
+    #     cluster = []
+    #     for r,g,b,x,y in pixels:
+    #         add_pixel = True
+    #         for mean_j in means:
+    #             if mean_i == mean_j:
+    #                 continue
+    #             dist_i = (r - mean_i[0]) ** 2 + (g - mean_i[1]) ** 2 + (b - mean_i[2]) ** 2
+    #             dist_j = (r - mean_j[0]) ** 2 + (g - mean_j[1]) ** 2 + (b - mean_j[2]) ** 2
+    #             if dist_i <= dist_j:
+    #                 add_pixel &= True
+    #                 continue
+    #             else:
+    #                 add_pixel = False
+    #         if add_pixel and not (x,y) in added_positions:
+    #             cluster.append((r,g,b,x,y))
+    #             added_positions.append((x,y))
+    #     clusters.append(cluster)
+
+    # return clusters
+
+    # Clusters initalisieren
     clusters = []
-    added_positions = []
-
-    if len(means) == 1:
-        cluster = []
-        for pixel in pixels:
-            cluster.append(pixel)
-        clusters.append(cluster)
-        return clusters
-
-
-    for mean_i in means:
-        cluster = []
-        for r,g,b,x,y in pixels:
-            add_pixel = True
-            for mean_j in means:
-                if mean_i == mean_j:
-                    continue
-                dist_i = (r - mean_i[0]) ** 2 + (g - mean_i[1]) ** 2 + (b - mean_i[2]) ** 2
-                dist_j = (r - mean_j[0]) ** 2 + (g - mean_j[1]) ** 2 + (b - mean_j[2]) ** 2
-                if dist_i <= dist_j:
-                    add_pixel &= True
-                    continue
-                else:
-                    add_pixel = False
-            if add_pixel and not (x,y) in added_positions:
-                cluster.append((r,g,b,x,y))
-                added_positions.append((x,y))
-        clusters.append(cluster)
+    for i in range(len(means)):
+        clusters.append([])
+    
+    for r,g,b,x,y in pixels:
+        best_cluster = -1
+        best_distance = float('inf')
+        for i in range(len(means)):
+            distance_i = (r - means[i][0]) ** 2 + (g - means[i][1]) ** 2 + (b - means[i][2]) ** 2
+            if distance_i < best_distance:
+                best_distance = distance_i
+                best_cluster = i
+        clusters[best_cluster].append((r,g,b,x,y))
 
     return clusters
 
-compute_clusters([(0, 0, 253, 0, 2), (0, 0, 254, 1, 2), (0, 0, 255, 2, 2), (0, 253, 0, 0, 1), (0, 254, 0, 1, 1), (0, 255, 0, 2, 1), (14, 0, 0, 0, 0), (13, 0, 0, 1, 0), (12, 0, 0, 2, 0)], [(0, 0, 253), (0, 253, 0), (14, 0, 0)])
+compute_clusters([(0, 0, 0, 0, 0), (0, 0, 0, 1, 0)], [(0, 0, 0), (1, 1, 1)])
 
 def averaged_pixels(clusters, means):
     """Calculates a pixel-list with averaged values.
