@@ -22,7 +22,12 @@ def interpolate_linearly(a, b):
         np.poly1d:
             A NumPy-Polynomial that interpolates linearly between a and b.
     """
-    pass  # TODO
+    y_difference = b[1] - a[1]
+    x_difference = b[0] - a[0]
+    tangent = y_difference / x_difference
+
+    c = b[1] - (tangent * b[0])
+    return np.poly1d([tangent, c])
 
 
 def newton_matrix(X):
@@ -41,7 +46,22 @@ def newton_matrix(X):
             Coefficient-Matrix in the LSE that is used to determine the
             coefficients of the Newton-basis.
     """
-    pass  # TODO
+    n = len(X)
+    matrix = np.zeros((n,n))
+    polynomials = []
+    for i in range(n):
+        if i == 0:
+            polynomials.append(np.poly1d([1]))
+        else:
+            poly = np.poly1d([1])
+            for u in range(i):
+                poly = poly * np.poly1d([1, -1 * X[u]])
+            polynomials.append(poly)
+    for i in range(n):
+        for j in range(n):
+            matrix[i,j] = polynomials[j](X[i])
+
+    return matrix
 
 
 def newton_polynomial(C, X):
@@ -61,7 +81,16 @@ def newton_polynomial(C, X):
             The Newton interpolation polynomial of the nodes.
     """
     assert len(C) == len(X)
-    pass  # TODO
+    polynomial = np.poly1d([0])
+    for i in range(len(X)):
+        if i == 0:
+            polynomial += C[0]
+        else: 
+            poly = np.poly1d([1])
+            for u in range(i):
+                poly = poly * np.poly1d([1, -1 * X[u]])
+            polynomial += C[i] * poly
+    return polynomial
 
 
 def interpolating_polynomial(X, Y):
@@ -81,7 +110,9 @@ def interpolating_polynomial(X, Y):
             The Newton interpolation polynomial of the nodes.
     """
     assert len(X) == len(Y)
-    pass  # TODO
+    newton_matx = newton_matrix(X)
+    C = np.linalg.solve(newton_matx, Y)
+    return newton_polynomial(C, X)
 
 
 def main():
