@@ -133,32 +133,19 @@ def split_curve(P):
             control polygons of the two halves of the original Bezier curve.
     """
     assert len(P) > 1
-    # n, two = P.shape
-    # P_copy = np.copy(P)
-    # left_curve = []
-    # right_curve = []
-    
-    # for i in range(n-1):
-    #     P_copy = add_control_point(P_copy)
-
-    # left_curve = P_copy[:n]
-    # right_curve = P_copy[n-1:]
-    # return (np.array(left_curve), np.array(right_curve))
-
     n, two = P.shape
-    t = 0.5
-    next_step = de_casteljau_step(P, t)
-    next_next_step = de_casteljau_step(next_step,t)
-    combined_points = []
-    combined_points.append(P[0])
-    for i in range(len(next_step)-1):
-        combined_points.append(next_step[i])
-        combined_points.append(next_next_step[i])
-    combined_points.append(next_step[-1])
+    P_copy = np.copy(P)
+    left = [P_copy[0]]
+    right = [P_copy[n-1]]
 
-    left_curve = combined_points[:n]
-    right_curve = combined_points[n-1:]
-    return (np.array(left_curve), np.array(right_curve))
+    while n > 1:
+        P_copy = de_casteljau_step(P_copy, 0.5)
+        left.append(P_copy[0])
+        right.append(P_copy[-1])
+        n -= 1
+    
+    right.reverse()
+    return (np.array(left), np.array(right))
 
 
 def bezier2(P, depth):
@@ -179,7 +166,14 @@ def bezier2(P, depth):
             a polygon approximating the Bezier curve.
     """
     assert len(P) > 1, depth >= 0
-    pass  # TODO
+    if depth == 0:
+        return P
+    else:
+        left, right = split_curve(P)
+        left_modified = bezier2(left, depth-1)
+        right_modified = bezier2(right, depth - 1)
+        right_modified = np.delete(right_modified, 0, 0)
+        return np.concatenate((left_modified, right_modified))
 
 
 def main():
