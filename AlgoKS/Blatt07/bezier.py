@@ -21,7 +21,14 @@ def de_casteljau_step(P, t):
             polygon after one De Casteljau step.
     """
     assert len(P) > 1, 0 <= t <= 1
-    pass  # TODO
+    y, x = P.shape
+    return_array = []
+    for i in range(y-1):
+        p_i0 = P[i]
+        p_i1 = P[i+1]
+        p_new = (1-t) * p_i0 + t * p_i1
+        return_array.append(p_new)
+    return np.array(return_array)
 
 
 def de_casteljau(P, t):
@@ -44,7 +51,11 @@ def de_casteljau(P, t):
             the first one being the x-, and the second one the y-coordinate.
     """
     assert len(P) != 0, 0 <= t <= 1
-    pass  # TODO
+    if len(P) == 2:
+        return de_casteljau_step(P,t)[0]
+    else: 
+        return de_casteljau(de_casteljau_step(P,t), t)
+
 
 
 def bezier1(P, m):
@@ -68,7 +79,12 @@ def bezier1(P, m):
             the Bezier curve.
     """
     assert len(P) > 1, m > 1
-    pass  # TODO
+    interval = 1 / (m-1)
+    points = []
+    for i in range(m):
+        i_point = de_casteljau(P, i * interval)
+        points.append(i_point)
+    return np.array(points)
 
 
 def add_control_point(P):
@@ -86,7 +102,18 @@ def add_control_point(P):
             of the same Bezier curve that P descrbes.
     """
     assert len(P) > 1
-    pass  # TODO
+    n, two = P.shape
+    new_points = []
+    a = 1 / n
+    for i in range(n+1):
+        if i == 0:
+            new_points.append(P[0])
+        elif i == n:
+            new_points.append(P[n-1])
+        else: 
+            new_between_point = a * i * P[i-1] + (1 - (a * i)) * P[i]
+            new_points.append(new_between_point)
+    return np.array(new_points)
 
 
 def split_curve(P):
@@ -106,7 +133,32 @@ def split_curve(P):
             control polygons of the two halves of the original Bezier curve.
     """
     assert len(P) > 1
-    pass  # TODO
+    # n, two = P.shape
+    # P_copy = np.copy(P)
+    # left_curve = []
+    # right_curve = []
+    
+    # for i in range(n-1):
+    #     P_copy = add_control_point(P_copy)
+
+    # left_curve = P_copy[:n]
+    # right_curve = P_copy[n-1:]
+    # return (np.array(left_curve), np.array(right_curve))
+
+    n, two = P.shape
+    t = 0.5
+    next_step = de_casteljau_step(P, t)
+    next_next_step = de_casteljau_step(next_step,t)
+    combined_points = []
+    combined_points.append(P[0])
+    for i in range(len(next_step)-1):
+        combined_points.append(next_step[i])
+        combined_points.append(next_next_step[i])
+    combined_points.append(next_step[-1])
+
+    left_curve = combined_points[:n]
+    right_curve = combined_points[n-1:]
+    return (np.array(left_curve), np.array(right_curve))
 
 
 def bezier2(P, depth):
